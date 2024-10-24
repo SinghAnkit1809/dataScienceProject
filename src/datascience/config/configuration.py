@@ -1,27 +1,17 @@
 from src.datascience.constants import *
 from src.datascience.utils.common import read_yaml, create_directories
-from src.datascience.entity.config_entity import (DataIngestionConfig)
+from src.datascience.entity.config_entity import (DataIngestionConfig,DataValidationConfig)
 
 class ConfigurationManager:
-    def __init__(self,
-                 config_filepath=CONFIG_FILE_PATH,
-                 params_filepath=PARAMS_FILE_PATH,
-                 schema_filepath=SCHEMA_FILE_PATH):
-        # Convert paths to absolute paths based on the current working directory
-        self.config_filepath = Path(config_filepath).absolute()
-        print(f"Config file absolute path: {self.config_filepath}")
-        self.params_filepath = Path(params_filepath).absolute()
-        self.schema_filepath = Path(schema_filepath).absolute()
-        
-        # Log the absolute paths to confirm
-        print(f"Config file absolute path: {self.config_filepath}")
-        print(f"Params file absolute path: {self.params_filepath}")
-        print(f"Schema file absolute path: {self.schema_filepath}")
-        
-        # Read YAML files
-        self.config = read_yaml(self.config_filepath)
-        self.params = read_yaml(self.params_filepath)
-        self.schema = read_yaml(self.schema_filepath)
+    def __init__(
+        self,
+        config_filepath = CONFIG_FILE_PATH,
+        params_filepath = PARAMS_FILE_PATH,
+        schema_filepath = SCHEMA_FILE_PATH):
+
+        self.config = read_yaml(config_filepath)
+        self.params = read_yaml(params_filepath)
+        self.schema = read_yaml(schema_filepath)
 
         create_directories([self.config.artifacts_root])
 
@@ -36,3 +26,18 @@ class ConfigurationManager:
             unzip_dir=Path(config.unzip_dir).absolute()
         )
         return data_ingestion_config
+    
+    def get_data_validation_config(self) -> DataValidationConfig:
+        config = self.config.data_validation
+        schema = self.schema.COLUMNS
+
+        create_directories([config.root_dir])
+
+        data_validation_config = DataValidationConfig(
+            root_dir=config.root_dir,
+            STATUS_FILE=config.STATUS_FILE,
+            unzip_data_dir = config.unzip_data_dir,
+            all_schema=schema,
+        )
+
+        return data_validation_config
